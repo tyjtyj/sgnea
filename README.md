@@ -6,13 +6,15 @@ configuration.yaml file
 
 This file is modified from home assistant scraper.py
 
+```
 Sensor
   - platform: sgnea
     resource: http://api.nea.gov.sg/api/WebAPI/?dataset=2hr_nowcast&keyref=<YOURAPIKEY>
     name: 'SGNEA NowCast'
     select: 'area[name="YOURLOCATION"]'
     attribute: 'forecast'
-    
+```
+
 1. Get your API key from SG NEA from https://www.nea.gov.sg/api
    Fill up your YOURAPIKEY
 
