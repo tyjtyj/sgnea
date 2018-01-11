@@ -1,4 +1,4 @@
-# home-assistant sgnea
+# SGNEA home-assistant
 Home Assistant Custom Component to get now cast from Singapore National Enviroment Agency (SG NEA)
 
 Home assistant
