@@ -1,10 +1,14 @@
 # SGNEA home-assistant
+
+
 Home Assistant Custom Component to get now cast from Singapore National Enviroment Agency (SG NEA)
+
+
+This file is modified from home assistant scraper.py
+
 
 Home assistant
 configuration.yaml file
-
-This file is modified from home assistant scraper.py
 
 ```
 Sensor
@@ -15,10 +19,11 @@ Sensor
     attribute: 'forecast'
 ```
 
-1. Get your API key from SG NEA from https://www.nea.gov.sg/api
-   Fill up your YOURAPIKEY
 
-2.Replace YOURLOCATION with the locations below
+1. Get your API key from SG NEA from https://www.nea.gov.sg/api. Fill up your YOURAPIKEY
+
+2. Replace YOURLOCATION with the locations below
+
 
 Ang Mo Kio
 Bedok
