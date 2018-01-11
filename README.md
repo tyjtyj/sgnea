@@ -24,7 +24,7 @@ Sensor
 
 2. Replace YOURLOCATION with the locations below
 
-
+```
 Ang Mo Kio
 Bedok
 Bishan
@@ -72,3 +72,4 @@ Western Islands
 Western Water Catchment
 Woodlands
 Yishun
+```
