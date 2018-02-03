@@ -86,7 +86,8 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     name = config.get(CONF_NAME)
     resource = config.get(CONF_RESOURCE)
     method = 'GET'
-    payload = headers = None
+    payload = None
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
     verify_ssl = config.get(CONF_VERIFY_SSL)
     select = config.get(CONF_SELECT)
     attr = config.get(CONF_ATTR)
@@ -165,6 +166,9 @@ class NeaSensor(Entity):
             value = raw_data.select(self._select)[0][self._attr]
         else:
             value = raw_data.select(self._select)[0].text
+			
+        if isinstance(value, list):
+            value = value[0]
         _LOGGER.debug(value)
 
         if self._value_template is not None:
