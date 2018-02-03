@@ -10,6 +10,7 @@ This file is modified from home assistant scraper.py
 Home assistant
 configuration.yaml file
 
+With API key
 ```
 Sensor
   - platform: sgnea
@@ -18,11 +19,20 @@ Sensor
     select: 'area[name="YOURLOCATION"]'
     attribute: 'forecast'
 ```
+Without API key
+```
+Sensor
+  - platform: sgnea
+    resource: http://www.nea.gov.sg/weather-climate/forecasts/2-hour-nowcast
+    name: 'SGNEA NowCast'
+    select: 'span[id="YOURLOCATION"]'
+    attribute: 'class'
+```
 
 
 1. Get your API key from SG NEA from https://www.nea.gov.sg/api. Fill up your YOURAPIKEY
 
-2. Replace YOURLOCATION with the locations below
+2. Replace YOURLOCATION with the locations below. Without APi key, replace space with _
 
 ```
 Ang Mo Kio
