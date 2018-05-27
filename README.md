@@ -22,11 +22,10 @@ Sensor
 Without API key
 ```
 Sensor
-  - platform: sgnea
-    resource: http://www.nea.gov.sg/weather-climate/forecasts/2-hour-nowcast
+  - platform: sgneaweb
+    resource: http://www.nea.gov.sg/weather-climate/forecasts/2-hour-nowcast(optional)
     name: 'SGNEA NowCast'
-    select: 'span[id="YOURLOCATION"]'
-    attribute: 'class'
+    area: 'Bedok'
 ```
 
 
