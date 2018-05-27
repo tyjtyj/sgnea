@@ -11,6 +11,8 @@ Home assistant
 configuration.yaml file
 
 With API key
+- Get your API key from SG NEA from https://www.nea.gov.sg/api. Fill up your YOURAPIKEY
+
 ```
 Sensor
   - platform: sgnea
@@ -25,13 +27,12 @@ Sensor
   - platform: sgneaweb
     resource: http://www.nea.gov.sg/weather-climate/forecasts/2-hour-nowcast(optional)
     name: 'SGNEA NowCast'
-    area: 'Bedok'
+    area: 'YOURLOCATION'
 ```
 
 
-1. Get your API key from SG NEA from https://www.nea.gov.sg/api. Fill up your YOURAPIKEY
-
-2. Replace YOURLOCATION with the locations below. Without APi key, replace space with _
+Location List:
+- Replace YOURLOCATION with the locations below. Without APi key, replace space with _
 
 ```
 Ang Mo Kio
