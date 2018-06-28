@@ -27,7 +27,7 @@ REQUIREMENTS = ['beautifulsoup4==4.6.0']
 _LOGGER = logging.getLogger(__name__)
 
 CONF_AREA = 'area'
-DEFAULT_RESOURCE = 'http://www.nea.gov.sg/weather-climate/forecasts/2-hour-nowcast/'
+DEFAULT_RESOURCE = 'http://www.weather.gov.sg/weather-forecast-2hrnowcast-2/'
 DEFAULT_NAME = 'SGNEA NowCast'
 SCAN_INTERVAL = timedelta(minutes=5)
 PARALLEL_UPDATES = 1
@@ -72,7 +72,7 @@ CONDITION_DETAILS = {
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AREA): cv.string,
-    vol.Optional(CONF_RESOURCE): cv.string,
+    vol.Optional(CONF_RESOURCE, default=DEFAULT_RESOURCE): cv.string,
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
 })
 
@@ -89,10 +89,11 @@ async def async_setup_platform(hass, config, async_add_entities,
     method = 'GET'
     payload = None
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
-    verify_ssl = 'true'
+    verify_ssl = 0
     auth = None
-    rest = RestData(method, resource, auth, headers, payload, verify_ssl)
+    
     try:
+        rest = RestData(method, resource, auth, headers, payload, verify_ssl)
         rest.update()
     except (aiohttp.client_exceptions.ClientConnectorError,
             asyncio.TimeoutError):
@@ -107,12 +108,10 @@ class NeaSensorWeb(Entity):
     def __init__(self, rest, name, area):
         """Initialize a web scrape sensor."""
         self.rest = rest
-        self.attr = 'class'
-        self.select = 'span[id="' + area + '"]'
         self._name = name
-        self._area = area
+        self.area = area
         self._state = STATE_UNKNOWN
-        self._rawstate = STATE_UNKNOWN
+        self._picurl = STATE_UNKNOWN
 
     @property
     def name(self):
@@ -122,7 +121,8 @@ class NeaSensorWeb(Entity):
     @property
     def entity_picture(self):
         """Return the entity picture to use in the frontend, if any."""
-        return 'https://www.nea.gov.sg/Html/Nea/images/common/weather/50px/' + self._rawstate + '.png'
+        #return 'https://www.nea.gov.sg/Html/Nea/images/common/weather/50px/' + self._picurl + '.png'
+        return self._picurl
 
     @property             
     def state(self):
@@ -137,16 +137,15 @@ class NeaSensorWeb(Entity):
             self.rest.update()
             raw_data = BeautifulSoup(self.rest.data, 'html.parser')
             #_LOGGER.debug(raw_data)
-            if self.attr is not None:
-                value = raw_data.select(self.select)[0][self.attr]
+            if raw_data is not None:
+                #value_column = raw_data.find('td',text='Boon Lay').findNext('td')
+                filter = {'text': self.area}
+                value_column = raw_data.find('td',**filter).findNext('td')
+                value = value_column.text
+                self._picurl = value_column.findNext('img')['src']
+
             else:
-                value = raw_data.select(self.select)[0].text
-                
-            if isinstance(value, list):
-                value = value[0]
-            #_LOGGER.debug(value)
-         
-            self._rawstate = value
+                value = 'No Data'
 
             if self.rest.data is None:
                 _LOGGER.error("Unable to fetch data from %s", value)
@@ -156,4 +155,5 @@ class NeaSensorWeb(Entity):
             _LOGGER.error("Couldn't fetch data")
             return False
         _LOGGER.debug("The data value is: %s", value)
-        self._state = CONDITION_DETAILS[self._rawstate]
+        #self._state = CONDITION_DETAILS[self._picurl]
+        self._state = value
