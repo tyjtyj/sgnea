@@ -13,7 +13,7 @@ configuration.yaml file
 ```
 Sensor
   - platform: sgneaweb
-    resource: http://www.weather.gov.sg/weather-forecast-2hrnowcast-2/
+    resource: https://www.weather.gov.sg/weather-forecast-2hrnowcast-2/
     name: 'SGNEA NowCast'
     area: 'YOURLOCATION'
 ```
