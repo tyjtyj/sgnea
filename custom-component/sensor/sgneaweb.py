@@ -27,7 +27,7 @@ REQUIREMENTS = ['beautifulsoup4==4.6.0']
 _LOGGER = logging.getLogger(__name__)
 
 CONF_AREA = 'area'
-DEFAULT_RESOURCE = 'http://www.weather.gov.sg/weather-forecast-2hrnowcast-2/'
+DEFAULT_RESOURCE = 'https://www.weather.gov.sg/weather-forecast-2hrnowcast-2/'
 DEFAULT_NAME = 'SGNEA NowCast'
 SCAN_INTERVAL = timedelta(minutes=5)
 PARALLEL_UPDATES = 1
