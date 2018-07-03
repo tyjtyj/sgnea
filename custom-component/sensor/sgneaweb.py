@@ -142,7 +142,7 @@ class NeaSensorWeb(Entity):
                 filter = {'text': self.area}
                 value_column = raw_data.find('td',**filter).findNext('td')
                 value = value_column.text
-                self._picurl = value_column.findNext('img')['src']
+                self._picurl = value_column.findNext('img')['src'].replace("http://","https://")
 
             else:
                 value = 'No Data'
@@ -156,4 +156,4 @@ class NeaSensorWeb(Entity):
             return False
         _LOGGER.debug("The data value is: %s", value)
         #self._state = CONDITION_DETAILS[self._picurl]
-        self._state = value
+        self._state = value.strip()
