@@ -2,7 +2,9 @@
 """
 import asyncio
 import logging
-from datetime import timedelta
+import json
+from datetime import timedelta, datetime
+
 
 import aiohttp
 import voluptuous as vol
@@ -22,12 +24,10 @@ from homeassistant.util import Throttle
 
 from homeassistant.components.sensor.rest import RestData
 
-REQUIREMENTS = ['beautifulsoup4==4.6.0']
-
 _LOGGER = logging.getLogger(__name__)
 
 CONF_AREA = 'area'
-DEFAULT_RESOURCE = 'https://www.weather.gov.sg/weather-forecast-2hrnowcast-2/'
+DEFAULT_RESOURCE = 'https://api.data.gov.sg/v1/environment/2-hour-weather-forecast?date_time=' + datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 DEFAULT_NAME = 'SGNEA NowCast'
 SCAN_INTERVAL = timedelta(minutes=5)
 PARALLEL_UPDATES = 1
@@ -70,6 +70,8 @@ CONDITION_DETAILS = {
     'WS': 'Windy, Showers',
 }
 
+INV_CONDITION_DETAILS = {v: k for k, v in CONDITION_DETAILS.items()}
+
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AREA): cv.string,
     vol.Optional(CONF_RESOURCE, default=DEFAULT_RESOURCE): cv.string,
@@ -91,7 +93,7 @@ async def async_setup_platform(hass, config, async_add_entities,
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
     verify_ssl = 0
     auth = None
-    
+
     try:
         rest = RestData(method, resource, auth, headers, payload, verify_ssl)
         rest.update()
@@ -121,7 +123,6 @@ class NeaSensorWeb(Entity):
     @property
     def entity_picture(self):
         """Return the entity picture to use in the frontend, if any."""
-        #return 'https://www.nea.gov.sg/Html/Nea/images/common/weather/50px/' + self._picurl + '.png'
         return self._picurl
 
     @property             
@@ -132,28 +133,30 @@ class NeaSensorWeb(Entity):
     #@Throttle(SCAN_INTERVAL)
     @asyncio.coroutine
     async def async_update(self):
-        from bs4 import BeautifulSoup
+
         try:
             self.rest.update()
-            raw_data = BeautifulSoup(self.rest.data, 'html.parser')
-            #_LOGGER.debug(raw_data)
-            if raw_data is not None:
-                #value_column = raw_data.find('td',text='Boon Lay').findNext('td')
-                filter = {'text': self.area}
-                value_column = raw_data.find('td',**filter).findNext('td')
-                value = value_column.text
-                self._picurl = value_column.findNext('img')['src'].replace("http://","https://")
+            json_dict = json.loads(self.rest.data)
+            forecasts = json_dict['items'][0]['forecasts']
 
+            for entry in forecasts:
+              if entry['area'] == self.area:
+                value = entry['forecast']
+                break
+            if value is not None:
+                self._picurl = 'https://www.nea.gov.sg/assets/images/icons/weather-bg/' + INV_CONDITION_DETAILS[value] + '.png';
+                _LOGGER.debug('PicsURL : %s',self._picurl)
             else:
                 value = 'No Data'
 
-            if self.rest.data is None:
+            if value is None:
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except (aiohttp.client_exceptions.ClientConnectorError,
-                asyncio.TimeoutError):
-            _LOGGER.error("Couldn't fetch data")
+                asyncio.TimeoutError,KeyError):
+            _LOGGER.error("Error. The data value is: %s", self.rest.data)
             return False
-        _LOGGER.debug("The data value is: %s", value)
+        _LOGGER.debug("The data value is: %s", self.rest.data)
         #self._state = CONDITION_DETAILS[self._picurl]
         self._state = value.strip()
+		
