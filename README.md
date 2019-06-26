@@ -11,8 +11,8 @@ Home assistant
 configuration.yaml file
 
 ```
-Sensor
-  - platform: sgneaweb
+sensor:
+  - platform: sgnea
     name: 'SGNEA NowCast'
     area: 'YOURLOCATION'
 ```
