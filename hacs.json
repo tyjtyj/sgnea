@@ -1,0 +1,7 @@
+{
+  "name": "SGNEA NowCast",
+  "domains": ["sensor"],
+  "filename": "my_super_awesome_thing.js",
+  "render_readme": true,
+  "country": "SG"
+}
