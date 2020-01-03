@@ -1,37 +1,25 @@
 
 import logging
 import json
-from datetime import timedelta, datetime
-
-
+import time
 import voluptuous as vol
-													   
-
-
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.components.rest.sensor import RestData
 
 from homeassistant.const import (
     CONF_NAME, CONF_RESOURCE, STATE_UNKNOWN)
-																	  
-																  
-							   
 from homeassistant.helpers.entity import Entity
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 
-										
-
 _LOGGER = logging.getLogger(__name__)
 
 CONF_AREA = 'area'
-DEFAULT_RESOURCE = 'https://api.data.gov.sg/v1/environment/2-hour-weather-forecast?date_time=' 
+DEFAULT_RESOURCE = 'https://www.nea.gov.sg/api/WeatherForecast/forecast24hrnowcast2hrs/' 
 DEFAULT_NAME = 'SGNEA NowCast'
 SCAN_INTERVAL = timedelta(minutes=5)
 PARALLEL_UPDATES = 1
-
 TIMEOUT = 10
-						 
 
 CONDITION_DETAILS = {
     'BR': 'Mist',
@@ -74,49 +62,22 @@ INV_CONDITION_DETAILS = {v: k for k, v in CONDITION_DETAILS.items()}
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AREA): cv.string,
     vol.Optional(CONF_RESOURCE, default=DEFAULT_RESOURCE): cv.string,
-									   
-														 
-									  
-																		
-																   
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-										   
-													  
-										   
-												   
-																		  
+ 
 })
 
 def setup_platform(hass, config, add_entities,
                                discovery_info=None):
-
-																	
     """Set up the Web scrape sensor."""
     _LOGGER.info('SGNEAWEB loaded')
     name = config.get(CONF_NAME)
     resource = config.get(CONF_RESOURCE)
-
-
     method = 'GET'
     payload = None
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
     verify_ssl = 0
-									
-								
-								  
-											   
-										
-										
-													
-								  
-								  
-
-							 
     area = config.get(CONF_AREA)
-													 
-			 
-													
-    resourcenow = resource + datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    resourcenow = self._resource +  str(time.time())
     auth = None
     rest = RestData(method, resourcenow, auth, headers, payload, verify_ssl)
     
@@ -142,9 +103,6 @@ class NeaSensorWeb(Entity):
         self._headers = headers
         self._state = STATE_UNKNOWN
         self._picurl = STATE_UNKNOWN
-						   
-											 
-										
 
     @property
     def name(self):
@@ -163,17 +121,17 @@ class NeaSensorWeb(Entity):
 
     def update(self):
         """Get the latest data from the source and updates the state."""
-        resourcenow = self._resource + datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        resourcenow = self._resource +  str(time.time()) 
         rest = RestData('GET', resourcenow, None, self._headers, None, 0)
         rest.update()
         try: 
             json_dict = json.loads(rest.data)
-            forecasts = json_dict['items'][0]['forecasts']
-            
+            forecasts = json_dict['Channel2HrForecast']['Item']['WeatherForecast']['Area']
             for entry in forecasts:
-                if entry['area'] == self._area:
-                    value = entry['forecast']
+                if entry['Name'] == self._area:
+                    value = CONDITION_DETAILS[entry['Forecast']]
                     break
+
             if value is not None:
                 self._picurl = 'https://www.nea.gov.sg/assets/images/icons/weather-bg/' + INV_CONDITION_DETAILS[value] + '.png';
                 _LOGGER.debug('PicsURL : %s',self._picurl)
@@ -182,12 +140,7 @@ class NeaSensorWeb(Entity):
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except (TimeoutError,KeyError):
-            _LOGGER.error("Error. The data value is: %s", rest.data)
+            _LOGGER.error("Error. The data value is: %s", forecasts)
             return
         _LOGGER.debug("The data value is: %s", rest.data)
-
-											
         self._state = value.strip()
-		
-			 
-							   
