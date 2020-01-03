@@ -1,4 +1,3 @@
-
 import logging
 import json
 import time
@@ -78,7 +77,7 @@ def setup_platform(hass, config, add_entities,
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
     verify_ssl = 0
     area = config.get(CONF_AREA)
-    resourcenow = self._resource +  str(time.time())
+    resourcenow = resource +  str(time.time())
     auth = None
     rest = RestData(method, resourcenow, auth, headers, payload, verify_ssl)
     
@@ -137,7 +136,7 @@ class NeaSensorWeb(Entity):
                 self._picurl = 'https://www.nea.gov.sg/assets/images/icons/weather-bg/' + INV_CONDITION_DETAILS[value] + '.png';
                 _LOGGER.debug('PicsURL : %s',self._picurl)
             else:
-                value = 'No Data'
+                value = STATE_UNKNOWN
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except (TimeoutError,KeyError):
