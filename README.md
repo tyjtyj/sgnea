@@ -1,3 +1,5 @@
+API stopped working since 2020. No update from regarding this. 
+
 # SGNEA home-assistant
 
 
