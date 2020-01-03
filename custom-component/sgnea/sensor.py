@@ -3,6 +3,7 @@ import logging
 import json
 import time
 import voluptuous as vol
+from datetime import timedelta
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.components.rest.sensor import RestData
 
