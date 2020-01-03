@@ -1,10 +1,11 @@
-API stopped working since 2020. No update from regarding this. 
+
 
 # SGNEA home-assistant
 
 
 Home Assistant Custom Component to get now cast from Singapore National Enviroment Agency (SG NEA)
 
+Data from 2 hour forcast
 
 This file is modified from home assistant scraper.py
 
