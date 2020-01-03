@@ -1,0 +1,9 @@
+{
+  "domain": "sgnea",
+  "name": "SGNEA NowCast",
+  "documentation": "https://github.com/tyjtyj/sgnea",
+  "dependencies": [],
+  "codeowners": ["@tyjtyj"],
+  "requirements": [],
+  "homeassistant": "0.96.0"
+}
