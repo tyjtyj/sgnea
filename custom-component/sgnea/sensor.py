@@ -5,8 +5,6 @@ import voluptuous as vol
 from datetime import timedelta
 from requests import Session
 from homeassistant.components.sensor import PLATFORM_SCHEMA
-#from homeassistant.components.rest.sensor import RestData
-
 from homeassistant.const import (
     CONF_NAME, CONF_RESOURCE, STATE_UNKNOWN)
 from homeassistant.helpers.entity import Entity
@@ -27,7 +25,7 @@ CONDITION_DETAILS = {
     'BR': 'Mist',
     'CL': 'Cloudy',
     'DR': 'Drizzle',
-    'FA': 'Fair (Day)',
+    'FA': 'Fair',
     'FG': 'Fog',
     'FN': 'Fair (Night)',
     'FW': 'Fair & Warm',
@@ -40,7 +38,7 @@ CONDITION_DETAILS = {
     'LR': 'Light Rain',
     'LS': 'Light Showers',
     'OC': 'Overcast',
-    'PC': 'Partly Cloudy (Day)',
+    'PC': 'Partly Cloudy',
     'PN': 'Partly Cloudy (Night)',
     'PS': 'Passing Showers',
     'RA': 'Moderate Rain',
@@ -85,16 +83,9 @@ def setup_platform(hass, config, add_entities,
     try:
         rest.update()
     except:
-    #if rest.data is None:
         _LOGGER.error("Unable to fetch data from %s", resourcenow)        
         raise PlatformNotReady
-        
-    
-        
     add_entities([NeaSensorWeb(name, resource, headers, area)], True)       
-                                                                             
-                      
-
 
 class NeaSensorWeb(Entity):
     """Representation of a web scrape sensor."""
@@ -144,7 +135,6 @@ class NeaSensorWeb(Entity):
                 value = STATE_UNKNOWN
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
-        #except (TimeoutError,KeyError):
         except:
             _LOGGER.error("Error. The data value is: %s", forecasts)
             return
