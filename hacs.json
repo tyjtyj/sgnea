@@ -3,7 +3,7 @@
   "domains": ["sensor"],
   "filename": "my_super_awesome_thing.js",
   "render_readme": true,
-  "country": "SG"
-  "homeassistant": "0.110.0"
-  "hacs": "1.1.2",
+  "country": "SG",
+  "homeassistant": "0.110.0",
+  "hacs": "1.1.2"
 }
