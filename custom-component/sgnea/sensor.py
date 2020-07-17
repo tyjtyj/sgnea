@@ -75,7 +75,7 @@ def setup_platform(hass, config, add_entities,
     method = 'GET'
     payload = None
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
-    verify_ssl = 0
+    verify_ssl = True
     area = config.get(CONF_AREA)
     resourcenow = resource +  str(time.time())[:8] + '00'
     auth = None
@@ -85,12 +85,12 @@ def setup_platform(hass, config, add_entities,
     except:
         _LOGGER.error("Unable to fetch data from %s", resourcenow)        
         raise PlatformNotReady
-    add_entities([NeaSensorWeb(name, resource, headers, area)], True)       
+    add_entities([NeaSensorWeb(name, resource, headers, area, verify_ssl)], True)       
 
 class NeaSensorWeb(Entity):
     """Representation of a web scrape sensor."""
 
-    def __init__(self, name, resource, headers, area):
+    def __init__(self, name, resource, headers, area, verify_ssl):
         """Initialize a web scrape sensor."""
 
         self._name = name
@@ -99,6 +99,7 @@ class NeaSensorWeb(Entity):
         self._headers = headers
         self._state = STATE_UNKNOWN
         self._picurl = STATE_UNKNOWN
+        self._verify_ssl = verify_ssl
 
     @property
     def name(self):
@@ -119,7 +120,7 @@ class NeaSensorWeb(Entity):
         """Get the latest data from the source and updates the state."""
         try: 
             resourcenow = self._resource +  str(time.time())[:8] + '00'
-            rest = NEARestData('GET', resourcenow, None, self._headers, None, 0)
+            rest = NEARestData('GET', resourcenow, None, self._headers, None, self._verify_ssl)
             rest.update()
             json_dict = json.loads(rest.data)
             forecasts = json_dict['Channel2HrForecast']['Item']['WeatherForecast']['Area']
