@@ -2,6 +2,7 @@
   "domain": "sgnea",
   "name": "SGNEA NowCast",
   "documentation": "https://github.com/tyjtyj/sgnea",
+  "issue_tracker": "https://github.com/tyjtyj/sgnea/issues",
   "dependencies": [],
   "codeowners": ["@tyjtyj"],
   "requirements": [],
