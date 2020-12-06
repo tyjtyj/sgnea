@@ -14,7 +14,6 @@ import homeassistant.helpers.config_validation as cv
 _LOGGER = logging.getLogger(__name__)
 
 CONF_AREA = 'area'
-DEFAULT_RESOURCE = 'https://www.nea.gov.sg/api/WeatherForecast/forecast24hrnowcast2hrs/' 
 DEFAULT_NAME = 'SGNEA NowCast'
 DEFAULT_TIMEOUT = 10
 SCAN_INTERVAL = timedelta(minutes=5)
@@ -61,7 +60,6 @@ INV_CONDITION_DETAILS = {v: k for k, v in CONDITION_DETAILS.items()}
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AREA): cv.string,
-    vol.Optional(CONF_RESOURCE, default=DEFAULT_RESOURCE): cv.string,
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
  
 })
@@ -71,35 +69,26 @@ def setup_platform(hass, config, add_entities,
     """Set up the Web scrape sensor."""
     _LOGGER.info('SGNEAWEB loaded')
     name = config.get(CONF_NAME)
-    resource = config.get(CONF_RESOURCE)
-    method = 'GET'
-    payload = None
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
-    verify_ssl = True
     area = config.get(CONF_AREA)
-    resourcenow = resource +  str(time.time())[:8] + '00'
-    auth = None
-    rest = NEARestData(method, resourcenow, auth, headers, payload, verify_ssl)
+    neadata=NEARestData()
     try:
-        rest.update()
+        
+        neadata.update()
     except:
-        _LOGGER.error("Unable to fetch data from %s", resourcenow)        
+        _LOGGER.error("Platfrom SGNEA Weather Not Ready")        
         raise PlatformNotReady
-    add_entities([NeaSensorWeb(name, resource, headers, area, verify_ssl)], True)       
+    add_entities([NeaSensorWeb(name, area, neadata)],True)  
 
 class NeaSensorWeb(Entity):
     """Representation of a web scrape sensor."""
 
-    def __init__(self, name, resource, headers, area, verify_ssl):
+    def __init__(self, name, area, neadata):
         """Initialize a web scrape sensor."""
-
+        self._neadata = neadata
         self._name = name
         self._area = area
-        self._resource = resource
-        self._headers = headers
         self._state = STATE_UNKNOWN
         self._picurl = STATE_UNKNOWN
-        self._verify_ssl = verify_ssl
 
     @property
     def name(self):
@@ -119,12 +108,12 @@ class NeaSensorWeb(Entity):
     def update(self):
         """Get the latest data from the source and updates the state."""
         try: 
-            resourcenow = self._resource +  str(time.time())[:8] + '00'
-            rest = NEARestData('GET', resourcenow, None, self._headers, None, self._verify_ssl)
-            rest.update()
-            json_dict = json.loads(rest.data)
-            forecasts = json_dict['Channel2HrForecast']['Item']['WeatherForecast']['Area']
-            for entry in forecasts:
+            self._neadata.update()
+            json_dict = json.loads(self._neadata.data)
+            forecastsarea = json_dict['Channel2HrForecast']['Item']['WeatherForecast']['Area']
+            forecastlat = forecastsarea[0]['Lat']
+            forecastlon = forecastsarea[0]['Lat']
+            for entry in forecastsarea:
                 if entry['Name'] == self._area:
                     value = CONDITION_DETAILS[entry['Forecast']]
                     break
@@ -137,27 +126,25 @@ class NeaSensorWeb(Entity):
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except:
-            _LOGGER.error("Error. The data value is: %s", forecasts)
+            _LOGGER.error("Error. The data value is: %s", forecastsarea)
             return
-        _LOGGER.debug("The data value is: %s", rest.data)
+        _LOGGER.debug("The data value is: %s", self._neadata.data)
         
 class NEARestData:
     """Class for handling the data retrieval."""
-
     def __init__(
-        self, method, resource, auth, headers, data, verify_ssl, timeout=DEFAULT_TIMEOUT
+        self, timeout=DEFAULT_TIMEOUT
     ):
         """Initialize the data object."""
-        self._method = method
-        self._resource = resource
-        self._auth = auth
-        self._headers = headers
-        self._request_data = data
-        self._verify_ssl = verify_ssl
+        self._method = 'GET'
+        self._resource = 'https://www.nea.gov.sg/api/WeatherForecast/forecast24hrnowcast2hrs/' 
+        self._auth = None
+        self._headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"}
+        self._request_data = None
+        self._verify_ssl = True
         self._timeout = timeout
         self._http_session = Session()
-        self.data = None
-        self.headers = None
+
 
     def __del__(self):
         """Destroy the http session on destroy."""
@@ -173,8 +160,8 @@ class NEARestData:
         try:
             response = self._http_session.request(
                 self._method,
-                self._resource,
-                headers=self._headers,
+                self._resource + str(time.time())[:8] + '00',
+                headers = self._headers,
                 auth=self._auth,
                 data=self._request_data,
                 timeout=self._timeout,
@@ -182,7 +169,8 @@ class NEARestData:
             )
             self.data = response.text
             self.headers = response.headers
+            
         except requests.exceptions.RequestException as ex:
             _LOGGER.error("Error fetching data: %s failed with %s", self._resource, ex)
-            self.data = None
+            self.neadata = None
             self.headers = None
