@@ -89,6 +89,7 @@ class NeaSensorWeb(Entity):
         self._area = area
         self._state = STATE_UNKNOWN
         self._picurl = STATE_UNKNOWN
+        self._24Hforecast = None
 
     @property
     def name(self):
@@ -105,30 +106,39 @@ class NeaSensorWeb(Entity):
         """Return the state of the device."""
         return self._state
 
+    @property
+    def device_state_attributes(self):
+        """Return the state attributes of the forecast."""
+        if self._24Hforecast is not False:
+            return {
+                "24H Forecast": self._24Hforecast['Forecast'],
+                "Temperature High": self._24Hforecast['Temperature']['High'],
+                "Temperature Low": self._24Hforecast['Temperature']['Low'],
+            }
+
     def update(self):
         """Get the latest data from the source and updates the state."""
         try: 
             self._neadata.update()
-            json_dict = json.loads(self._neadata.data)
-            forecastsarea = json_dict['Channel2HrForecast']['Item']['WeatherForecast']['Area']
-            forecastlat = forecastsarea[0]['Lat']
-            forecastlon = forecastsarea[0]['Lat']
+            nea_dict = json.loads(self._neadata.data)
+            self._24Hforecast = nea_dict['Channel24HrForecast']['Main']
+            forecastsarea = nea_dict['Channel2HrForecast']['Item']['WeatherForecast']['Area']
             for entry in forecastsarea:
                 if entry['Name'] == self._area:
-                    value = CONDITION_DETAILS[entry['Forecast']]
+                    value = entry['Forecast']
                     break
-            self._state = value.strip()
+            self._state = CONDITION_DETAILS[entry['Forecast']].strip()
             if value is not None:
-                self._picurl = 'https://www.nea.gov.sg/assets/images/icons/weather-bg/' + INV_CONDITION_DETAILS[value] + '.png';
+                self._picurl = 'https://www.nea.gov.sg/assets/images/icons/weather-bg/' + value + '.png';
                 _LOGGER.debug('PicsURL : %s',self._picurl)
             else:
                 value = STATE_UNKNOWN
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except:
-            _LOGGER.error("Error. The data value is: %s", forecastsarea)
+            _LOGGER.error("Error. The data is: %s", self._neadata.data)
             return
-        _LOGGER.debug("The data value is: %s", self._neadata.data)
+        _LOGGER.debug("The neadata is: %s", self._neadata.data)
         
 class NEARestData:
     """Class for handling the data retrieval."""
