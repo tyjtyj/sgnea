@@ -127,12 +127,13 @@ class NeaSensorWeb(Entity):
                 if entry['Name'] == self._area:
                     value = entry['Forecast']
                     break
-            self._state = CONDITION_DETAILS[entry['Forecast']].strip()
             if value is not None:
+                self._state = CONDITION_DETAILS[value].strip()
                 self._picurl = 'https://www.nea.gov.sg/assets/images/icons/weather-bg/' + value + '.png';
                 _LOGGER.debug('PicsURL : %s',self._picurl)
             else:
                 value = STATE_UNKNOWN
+                self._state = STATE_UNKNOWN
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except:
