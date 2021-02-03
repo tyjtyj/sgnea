@@ -137,7 +137,8 @@ class NeaSensorWeb(Entity):
                 _LOGGER.error("Unable to fetch data from %s", value)
                 return False
         except:
-            _LOGGER.error("Error. The data is: %s", self._neadata.data)
+            _LOGGER.info("Unable to parse data from NEA, this could be temporary")
+            #_LOGGER.error("Error. The data is: %s", self._neadata.data)
             return
         _LOGGER.debug("The neadata is: %s", self._neadata.data)
         
