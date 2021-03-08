@@ -7,7 +7,8 @@ Home Assistant Custom Component to get now cast from Singapore National Envirome
 
 Data from 2 hour forcast
 
-This file is modified from home assistant scraper.py
+Installation:
+Add "https://github.com/tyjtyj/sgnea" to hacs repository and find sgnea to install.
 
 
 Home assistant
