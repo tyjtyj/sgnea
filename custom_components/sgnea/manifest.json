@@ -7,5 +7,5 @@
   "codeowners": ["@tyjtyj"],
   "requirements": [],
   "homeassistant": "0.111.0",
-  "version": 0.1.2
+  "version": "0.1.2"
 }
