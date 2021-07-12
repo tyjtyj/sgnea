@@ -109,7 +109,7 @@ class NeaSensorWeb(Entity):
     @property
     def device_state_attributes(self):
         """Return the state attributes of the forecast."""
-        if self._24Hforecast is not False:
+        if self._24Hforecast is not None:
             return {
                 "24H Forecast": self._24Hforecast['Forecast'],
                 "Temperature High": self._24Hforecast['Temperature']['High'],
